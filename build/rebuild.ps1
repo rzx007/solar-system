@@ -1,6 +1,7 @@
-# 将各部分逻辑装配为单文件 solar.html
+# 将各部分逻辑装配为单文件 index.html
 # 关键：全部使用显式 UTF-8 I/O。PowerShell 5.1 的 Get-Content -Raw 对无 BOM 文件
 # 会按系统 ANSI(GBK) 解码，导致中文乱码并破坏标签，故这里统一用 .NET API。
+# 产物名为 index.html，以便直接作为 GitHub Pages 入口。
 $ErrorActionPreference = 'Stop'
 
 $root  = Split-Path -Parent $PSScriptRoot
@@ -25,7 +26,7 @@ foreach($f in $parts){
 }
 [void]$sb.Append("</script>`r`n</body>`r`n</html>`r`n")
 
-$out = Join-Path $root 'solar.html'
+$out = Join-Path $root 'index.html'
 $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [System.IO.File]::WriteAllText($out, $sb.ToString(), $utf8NoBom)
-Write-Output ("built solar.html bytes=" + (Get-Item $out).Length)
+Write-Output ("built index.html bytes=" + (Get-Item $out).Length)

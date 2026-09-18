@@ -4,7 +4,9 @@
 
 ## 使用
 
-直接用浏览器打开 `solar.html` 即可，无需服务器、无需联网（three.js 已内联进文件）。
+**在线**：https://rzx007.github.io/solar-system/
+
+**本地**：直接用浏览器打开 `index.html` 即可，无需服务器、无需联网（three.js 已内联进文件）。
 
 ## 交互
 
@@ -30,7 +32,7 @@
 
 ## 构建
 
-`logic_*.js` 是拼接用的源码分片，按顺序与 `build/head.html`（含内联 three.js）合并生成 `solar.html`：
+`logic_*.js` 是拼接用的源码分片，按顺序与 `build/head.html`（含内联 three.js）合并生成 `index.html`：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\build\rebuild.ps1

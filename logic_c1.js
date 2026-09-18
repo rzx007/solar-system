@@ -1,0 +1,37 @@
+﻿/* ================= 行星数据（示意尺度，非真实比例） ================= */
+var SUN_R=9.0;
+var PLANETS=[
+ {name:'水星', en:'Mercury', type:'rocky', r:0.62, orbit:22,  period:0.241, tilt:0.03, spin:1.4, inc:0.12,
+  c0:'#3f3d3a', c1:'#6a6660', c2:'#8d887f', c3:'#b6b0a6', ocean:0, sea:0.50, ice:0.98, crater:1.0, bump:1.15, scale:3.6, atmo:0.03},
+ {name:'金星', en:'Venus', type:'rocky', r:1.14, orbit:31, period:0.615, tilt:3.09, spin:-0.35, inc:0.06,
+  c0:'#6b4a1e', c1:'#b08340', c2:'#d9bd7c', c3:'#f0e2b2', ocean:0, sea:0.50, ice:0.99, crater:0.10, bump:0.55, scale:2.9, atmo:0.85,
+  cloudCover:0.18, cloudCol:'#f2dd9a', cloudR:1.030, cloudSpin:0.30},
+ {name:'地球', en:'Earth', type:'rocky', r:1.25, orbit:43, period:1.000, tilt:23.44, spin:6.0, inc:0.0,
+  c0:'#1b3f1c', c1:'#2e6b28', c2:'#6d7a3c', c3:'#9a8a63', ocean:1, sea:0.505, ice:0.86, crater:0.0, bump:1.0, scale:3.1, atmo:1.05,
+  cloudCover:0.50, cloudCol:'#ffffff', cloudR:1.014, cloudSpin:3.4,
+  atmoCol:'#5aa6f0', atmoPow:3.0, atmoInt:1.15,
+  moons:[{name:'月球', r:0.34, dist:3.4, period:0.075, c0:'#4a4845', c1:'#7b7873', c2:'#a8a49c', c3:'#cfcac0', crater:1.0, bump:1.3, scale:4.2}]},
+ {name:'火星', en:'Mars', type:'rocky', r:0.80, orbit:57, period:1.881, tilt:25.19, spin:5.9, inc:0.09,
+  c0:'#5c2a16', c1:'#9b4a24', c2:'#bd6a3c', c3:'#d9a17a', ocean:0, sea:0.50, ice:0.87, crater:0.42, bump:1.1, scale:3.3, atmo:0.16,
+  atmoCol:'#e08a55', atmoPow:3.4, atmoInt:0.5},
+ {name:'木星', en:'Jupiter', type:'gas', r:4.15, orbit:86, period:11.86, tilt:3.13, spin:14.0, inc:0.05,
+  c0:'#6d5033', c1:'#c9a878', c2:'#e8d8bd', c3:'#8a6b48', spotCol:'#b4462e', spot:1.0, bands:11.0, swirl:1.0, atmo:0.34,
+  atmoCol:'#e8c9a0', atmoPow:3.2, atmoInt:0.45,
+  moons:[{name:'木卫一 Io', r:0.30, dist:6.2, period:0.0487, c0:'#8a7a1e', c1:'#d4b83e', c2:'#e8dfa8', c3:'#f2ecc8', crater:0.6, bump:0.8, scale:4.0},
+         {name:'木卫二 Europa', r:0.27, dist:7.6, period:0.0872, c0:'#9a8f80', c1:'#d8cfc0', c2:'#efe8dc', c3:'#ffffff', crater:0.1, bump:0.4, scale:5.5},
+         {name:'木卫三 Ganymede', r:0.40, dist:9.4, period:0.1751, c0:'#5e5648', c1:'#8f8674', c2:'#b5ab96', c3:'#d5ccba', crater:0.5, bump:1.0, scale:4.0},
+         {name:'木卫四 Callisto', r:0.38, dist:11.6, period:0.2520, c0:'#443f38', c1:'#6f685c', c2:'#948b7c', c3:'#b8ae9e', crater:1.0, bump:1.2, scale:4.4}]},
+ {name:'土星', en:'Saturn', type:'gas', r:3.55, orbit:116, period:29.46, tilt:26.73, spin:13.0, inc:0.07,
+  c0:'#9a8256', c1:'#d8c48e', c2:'#f2e7c0', c3:'#b9a273', bandb:9.0, bands:9.0, swirl:0.55, atmo:0.26,
+  atmoCol:'#e6d5a8', atmoPow:3.2, atmoInt:0.4,
+  ring:{inner:1.35, outer:2.35, c0:'#c9b78e', c1:'#efe6cd', opacity:0.92},
+  moons:[{name:'土卫六 Titan', r:0.36, dist:6.8, period:0.0437, c0:'#7a5a1e', c1:'#c99a3e', c2:'#e0b96a', c3:'#f0d8a0', crater:0.2, bump:0.5, scale:4.0}]},
+ {name:'天王星', en:'Uranus', type:'gas', r:2.25, orbit:145, period:84.01, tilt:97.77, spin:-8.0, inc:0.11,
+  c0:'#5fa8b5', c1:'#9fd6dc', c2:'#c8eef0', c3:'#7cc0cb', bands:4.0, swirl:0.22, atmo:0.40,
+  atmoCol:'#a5e0e6', atmoPow:3.0, atmoInt:0.55,
+  ring:{inner:1.55, outer:1.95, c0:'#7fa8b0', c1:'#c3e0e4', opacity:0.34}},
+ {name:'海王星', en:'Neptune', type:'gas', r:2.18, orbit:172, period:164.8, tilt:28.32, spin:9.0, inc:0.03,
+  c0:'#16357e', c1:'#2b5cbe', c2:'#6f9ce0', c3:'#122a63', spotCol:'#1b2a55', spot:0.55, bands:6.0, swirl:0.70, atmo:0.45,
+  atmoCol:'#5f8fe8', atmoPow:3.0, atmoInt:0.6}
+];
+/* ANCHOR_C1_END */

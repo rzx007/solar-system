@@ -1,0 +1,4 @@
+# 统一换行符，保证 build/rebuild.ps1 的拼装结果可复现
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.png binary

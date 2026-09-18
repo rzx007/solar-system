@@ -1,0 +1,18 @@
+# 无头浏览器验证产物（可随时重新生成，不入库）
+build/*.png
+build/*.txt
+build/logic_all.js
+
+# 验证用临时页面
+build/test*.html
+build/t2.html
+build/t3.html
+build/focus_*.html
+build/nofade.html
+build/webgl_probe.html
+
+# 系统与编辑器
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

@@ -742,8 +742,12 @@ PICK.push(sunObj.mesh);
 var ctrl={
   theta:0.62, phi:1.18, dist:210, dTheta:0.62, dPhi:1.18, dDist:210,
   target:new THREE.Vector3(0,0,0), want:new THREE.Vector3(0,0,0),
-  focus:null
+  focus:null,
+  /* 聚焦时的"过渡偏移"：与天体的差值，逐帧衰减到 0。
+     收敛后 target 与天体完全重合，天体在画面中静止，不再有稳态滞后。 */
+  off:new THREE.Vector3(0,0,0)
 };
+var lastFollowRef=null;   // 上一次被跟随的天体，用于识别焦点切换
 var dragging=0, lastX=0, lastY=0, moved=0;
 var dom=renderer.domElement;
 
@@ -769,9 +773,10 @@ dom.addEventListener('pointermove',function(e){
     var right=new THREE.Vector3(), up=new THREE.Vector3(), fwd=new THREE.Vector3();
     camera.matrixWorld.extractBasis(right,up,fwd);
     var kk=ctrl.dDist*0.0016;
+    /* 平移前先把落点对齐当前机位，避免从聚焦状态开始拖拽时画面跳变 */
+    if(ctrl.focus){ ctrl.focus=null; ctrl.want.copy(ctrl.target); }
     ctrl.want.addScaledVector(right,-dx*kk);
     ctrl.want.addScaledVector(up,dy*kk);
-    ctrl.focus=null;
   }
 });
 dom.addEventListener('pointerup',function(e){
@@ -801,14 +806,18 @@ function pickAt(cx,cy){
   var hits=ray.intersectObjects(PICK,false);
   if(hits.length>0){
     focusBody(hits[0].object.userData.body);
-  } else {
+  } else if(ctrl.focus){
+    /* 点空白处取消聚焦：停在原处，不再拉回全景原点 */
+    ctrl.want.copy(ctrl.target);
     ctrl.focus=null;
+    syncPanel();
   }
 }
 function focusBody(bd){
   if(!bd){ return; }
   ctrl.focus=bd;
-  ctrl.want.copy(bd.__posTmp);
+  /* 自由视角的落点跟随当前机位，释放焦点时不会突然跳回原点 */
+  ctrl.want.copy(ctrl.target);
   ctrl.dDist=focusDistance(bd);
   lastFocusRef=bd;
   syncPanel();
@@ -819,11 +828,11 @@ function focusDistance(bd){
   if(bd.cfg.ring){ rr=bd.cfg.r*bd.cfg.ring.outer*1.15; }
   return Math.max(rr*3.2,0.75);
 }
-/* 聚焦时的缩放边界，避免穿模或缩到看不见 */
+/* 聚焦时的缩放边界：滚轮与主循环共用这一个来源，避免两套边界互相回弹 */
 function focusBounds(bd){
   var rr=bd.cfg.r;
   if(bd.cfg.ring){ rr=bd.cfg.r*bd.cfg.ring.outer; }
-  return { lo:Math.max(rr*1.30,0.35), hi:Math.max(rr*45,140) };
+  return { lo:Math.max(rr*1.45,0.35), hi:Math.max(rr*45,140) };
 }
 function clearFocus(){
   ctrl.focus=null;
@@ -964,23 +973,32 @@ function tick(){
   sunObj.glowMesh.quaternion.copy(camera.quaternion);
   stars.material.uniforms.uTime.value=t;
 
-  /* 相机：使用指数阻尼，保证低帧率下跟随手感一致 */
+  /* 相机：非聚焦时用指数阻尼回到自由视点；
+     聚焦时改用"过渡偏移衰减"，收敛后与天体刚性同步 —— 无稳态滞后，天体在画面中静止。 */
   if(ctrl.focus){
     ctrl.focus.tilt.getWorldPosition(tmpPos);
-    ctrl.want.lerp(tmpPos,1-Math.exp(-14.0*dt));
+    if(ctrl.focus!==lastFollowRef){
+      /* 焦点切换：把当前差值记为过渡偏移，之后只衰减这个偏移 */
+      lastFollowRef=ctrl.focus;
+      ctrl.off.copy(ctrl.target).sub(tmpPos);
+    }
+    ctrl.off.multiplyScalar(Math.exp(-7.0*dt));
+    if(ctrl.off.lengthSq()<1e-8){ ctrl.off.set(0,0,0); }
+    ctrl.target.copy(tmpPos).add(ctrl.off);
+  } else {
+    lastFollowRef=null;
+    ctrl.off.set(0,0,0);
+    ctrl.target.lerp(ctrl.want,1-Math.exp(-8.0*dt));
   }
-  ctrl.target.lerp(ctrl.want,1-Math.exp(-8.0*dt));
   var damp=1-Math.exp(-9.0*dt);
   ctrl.theta+=(ctrl.dTheta-ctrl.theta)*damp;
   ctrl.phi+=(ctrl.dPhi-ctrl.phi)*damp;
 
-  /* 聚焦时按天体半径约束缩放区间，避免固定值导致巨人行星贴脸 */
+  /* 聚焦时约束缩放区间：与滚轮共用 focusBounds，避免边界互相打架导致回弹 */
   if(ctrl.focus){
-    var fr=ctrl.focus.cfg.r;
-    var lo=Math.max(fr*2.0,0.9);
-    if(ctrl.dDist<lo){ ctrl.dDist=lo; }
-    var hi=Math.max(fr*70,160);
-    if(ctrl.dDist>hi){ ctrl.dDist=hi; }
+    var fb=focusBounds(ctrl.focus);
+    if(ctrl.dDist<fb.lo){ ctrl.dDist=fb.lo; }
+    if(ctrl.dDist>fb.hi){ ctrl.dDist=fb.hi; }
   }
   ctrl.dist+=(ctrl.dDist-ctrl.dist)*(1-Math.exp(-6.0*dt));
 

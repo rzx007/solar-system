@@ -10,7 +10,10 @@ build/t3.html
 build/focus_*.html
 build/nofade.html
 build/webgl_probe.html
+build/geom_probe.html
+build/old_index.html
 test/mut_*.html
+test/live.html
 
 # 系统与编辑器
 Thumbs.db

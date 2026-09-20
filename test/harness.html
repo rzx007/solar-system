@@ -123,6 +123,31 @@ document.getElementById('F').addEventListener('load',function(){
     ok(hud.indexOf('未加载')<0,'three.js 未加载：'+show(hud));
   });
 
+  /* 卫星不能落在母星的环带里。环与卫星共面（都在 b.tilt 下），
+     所以只要轨道半径 < 环外缘就必然穿模。曾发生：土卫六 dist=6.8 < 8.34。 */
+  add('所有卫星轨道半径都在母星环外',function(){
+    var T=w.THREE;
+    ok(!!T,'THREE 未定义');
+    ok(!!w.scene,'scene 未定义');
+    w.scene.updateMatrixWorld(true);
+    var c=new T.Vector3(), m=new T.Vector3(), checked=0;
+    for(var i=0;i<w.BODIES.length;i++){
+      var p=w.BODIES[i];
+      if(p.isMoon||!p.moons){ continue; }
+      var ringOut=p.cfg.ring?(p.cfg.r*p.cfg.ring.outer):0;
+      if(ringOut<=0){ continue; }
+      p.tilt.getWorldPosition(c);
+      for(var j=0;j<p.moons.length;j++){
+        p.moons[j].carrier.getWorldPosition(m);
+        var r=m.distanceTo(c);
+        checked++;
+        ok(r>ringOut,p.cfg.en+' / '+p.moons[j].cfg.name+' 轨道半径 '+r.toFixed(3)+
+           ' 落在环带内（环外缘 '+ringOut.toFixed(3)+'）');
+      }
+    }
+    ok(checked>0,'没有检查到任何"卫星 + 母星环"组合，用例失效');
+  });
+
   finish();
 });
 </script>

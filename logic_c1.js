@@ -25,7 +25,7 @@ var PLANETS=[
   c0:'#9a8256', c1:'#d8c48e', c2:'#f2e7c0', c3:'#b9a273', bandb:9.0, bands:9.0, swirl:0.55, atmo:0.26,
   atmoCol:'#e6d5a8', atmoPow:3.2, atmoInt:0.4,
   ring:{inner:1.35, outer:2.35, c0:'#c9b78e', c1:'#efe6cd', opacity:0.92},
-  moons:[{name:'土卫六 Titan', r:0.36, dist:6.8, period:0.0437, c0:'#7a5a1e', c1:'#c99a3e', c2:'#e0b96a', c3:'#f0d8a0', crater:0.2, bump:0.5, scale:4.0}]},
+  moons:[{name:'土卫六 Titan', r:0.36, dist:11.0, period:0.090, c0:'#7a5a1e', c1:'#c99a3e', c2:'#e0b96a', c3:'#f0d8a0', crater:0.2, bump:0.5, scale:4.0}]},
  {name:'天王星', en:'Uranus', type:'gas', r:2.25, orbit:145, period:84.01, tilt:97.77, spin:-8.0, inc:0.11,
   c0:'#5fa8b5', c1:'#9fd6dc', c2:'#c8eef0', c3:'#7cc0cb', bands:4.0, swirl:0.22, atmo:0.40,
   atmoCol:'#a5e0e6', atmoPow:3.0, atmoInt:0.55,

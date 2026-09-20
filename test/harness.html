@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><title>solar-system tests</title></head>
+<body>
+<pre id="T">running</pre>
+<iframe id="F" width="1280" height="600"></iframe>
+<script>
+var lines=[], pass=0, fail=0, errs=[];
+var T=document.getElementById('T');
+var qs=new URLSearchParams(location.search);
+document.getElementById('F').src=qs.get('src')||'../index.html';
+function line(s){ lines.push(s); T.textContent=lines.join('\n'); }
+function show(v){ try{ return JSON.stringify(v); }catch(e){ return String(v); } }
+function ok(cond,msg){ if(!cond){ throw new Error(msg); } }
+function fn(w,n){ if(typeof w[n]!=='function'){ throw new Error('未定义函数 '+n); } return w[n]; }
+function add(name,body){
+  try{ body(); pass++; line('PASS '+name); }
+  catch(e){ fail++; line('FAIL '+name+' :: '+(e&&e.message?e.message:e)); }
+}
+function key(w,k){ w.dispatchEvent(new w.KeyboardEvent('keydown',{key:k,bubbles:true})); }
+function fire(w,el,type){ el.dispatchEvent(new w.Event(type,{bubbles:true})); }
+function finish(){ line('SUMMARY pass='+pass+' fail='+fail); document.title='DONE'; }
+
+document.getElementById('F').addEventListener('load',function(){
+  var w;
+  try{ w=document.getElementById('F').contentWindow; }
+  catch(e){ line('FAIL 载入页面 :: '+e.message); line('SUMMARY pass=0 fail=1'); return; }
+  w.addEventListener('error',function(ev){ errs.push('error: '+(ev.message||ev.type)); });
+  w.addEventListener('unhandledrejection',function(ev){ errs.push('rejection: '+String(ev.reason)); });
+
+  add('端点映射：p=0 -> 0.1，p=1000 -> 400',function(){
+    var f=fn(w,'pToDps');
+    ok(f(0)===0.1,'pToDps(0)='+show(f(0)));
+    ok(f(1000)===400,'pToDps(1000)='+show(f(1000)));
+  });
+
+  add('1001 个滑块位置严格单调递增',function(){
+    var f=fn(w,'pToDps'), prev=-1;
+    for(var p=0;p<=1000;p++){
+      var v=f(p);
+      ok(typeof v==='number'&&isFinite(v)&&v>0,'p='+p+' 非正有限数 '+show(v));
+      ok(v>prev,'p='+p+' 未递增 v='+v+' prev='+prev);
+      prev=v;
+    }
+  });
+
+  add('往返误差 <1%：dps -> p -> dps',function(){
+    var f=fn(w,'pToDps'), g=fn(w,'dpsToP');
+    var samples=[0.1,0.15,0.2,0.5,1,2,5,10,20,37.5,50,100,200,333,400];
+    for(var i=0;i<samples.length;i++){
+      var d=samples[i], p=g(d);
+      ok(typeof p==='number'&&p===Math.round(p),'dps='+d+' 位置非整数 '+show(p));
+      ok(p>=0&&p<=1000,'dps='+d+' 位置越界 '+show(p));
+      var back=f(p), rel=Math.abs(back-d)/d;
+      ok(rel<0.01,'dps='+d+' 往返='+back+' 相对误差='+rel);
+    }
+  });
+
+  add('默认 10 天/秒 落在 p=555',function(){
+    var g=fn(w,'dpsToP');
+    ok(g(10)===555,'dpsToP(10)='+show(g(10)));
+  });
+
+  add('拖动滑块改到 daysPerSec 且读数同步',function(){
+    var el=w.document.getElementById('spd'), v=w.document.getElementById('spdv');
+    ok(!!el,'面板里没有滑块 #spd');
+    ok(!!v,'面板里没有读数 #spdv');
+    var lbl=fn(w,'speedLabel');
+    el.value='1000'; fire(w,el,'input');
+    ok(w.daysPerSec===400,'滑块拉到顶后 daysPerSec='+show(w.daysPerSec));
+    ok(v.textContent===lbl(400),'读数='+show(v.textContent)+' 期望='+show(lbl(400)));
+    el.value='0'; fire(w,el,'input');
+    ok(w.daysPerSec===0.1,'滑块拉到底后 daysPerSec='+show(w.daysPerSec));
+    ok(v.textContent===lbl(0.1),'读数='+show(v.textContent)+' 期望='+show(lbl(0.1)));
+  });
+
+  add('按 ] 后滑块位置与读数一并更新',function(){
+    var el=w.document.getElementById('spd'), v=w.document.getElementById('spdv');
+    var g=fn(w,'dpsToP'), lbl=fn(w,'speedLabel');
+    w.setSpeed(10);
+    var before=w.daysPerSec;
+    key(w,']');
+    ok(w.daysPerSec>before,'按 ] 后流速没有变大：'+show(w.daysPerSec));
+    ok(el.value===String(g(w.daysPerSec)),'滑块位置='+show(el.value)+' 期望='+show(String(g(w.daysPerSec))));
+    ok(v.textContent===lbl(w.daysPerSec),'读数='+show(v.textContent)+' 期望='+show(lbl(w.daysPerSec)));
+  });
+
+  add('[ 连按精确停在 0.1，] 连按精确停在 400',function(){
+    w.setSpeed(10);
+    for(var i=0;i<80;i++){ key(w,'['); }
+    ok(w.daysPerSec===0.1,'[ 连按后 daysPerSec='+show(w.daysPerSec));
+    for(var j=0;j<80;j++){ key(w,']'); }
+    ok(w.daysPerSec===400,'] 连按后 daysPerSec='+show(w.daysPerSec));
+  });
+
+  /* HUD 有 0.25 秒节流，与"两处显示用同一个格式器"是两件事：
+     这里直接调用真实的 updateHUD() 渲染，再读真实 DOM，避免测试依赖节流节奏。 */
+  add('面板读数与 HUD 字符串完全一致',function(){
+    var v=w.document.getElementById('spdv'), hud=w.document.getElementById('hud');
+    var lbl=fn(w,'speedLabel'), up=fn(w,'updateHUD');
+    w.setSpeed(37.5);
+    up();
+    var txt=v.textContent;
+    ok(txt===lbl(37.5),'面板读数='+show(txt)+' 期望='+show(lbl(37.5)));
+    ok(hud.textContent.indexOf(txt)>=0,'HUD 里找不到 '+show(txt)+'；HUD='+show(hud.textContent));
+  });
+
+  add('滑块范围与键盘夹取边界一致',function(){
+    var el=w.document.getElementById('spd');
+    ok(el.getAttribute('min')==='0','滑块 min='+show(el.getAttribute('min')));
+    ok(el.getAttribute('max')==='1000','滑块 max='+show(el.getAttribute('max')));
+    var f=fn(w,'pToDps');
+    w.setSpeed(0.0001);
+    ok(w.daysPerSec===f(0),'低于下限未夹取：'+show(w.daysPerSec));
+    w.setSpeed(99999);
+    ok(w.daysPerSec===f(1000),'高于上限未夹取：'+show(w.daysPerSec));
+  });
+
+  add('页面无运行时错误且 HUD 正常',function(){
+    var hud=w.document.getElementById('hud').innerHTML;
+    ok(errs.length===0,'捕获到运行时错误：'+errs.join(' ; '));
+    ok(hud.indexOf('不可用')<0,'WebGL 不可用：'+show(hud));
+    ok(hud.indexOf('未加载')<0,'three.js 未加载：'+show(hud));
+  });
+
+  finish();
+});
+</script>
+</body></html>

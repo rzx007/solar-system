@@ -15,15 +15,31 @@
   #title span{color:#6f86a0;font-weight:400;font-size:12px;letter-spacing:1px}
   #hint{position:fixed;right:14px;bottom:12px;z-index:5;color:#6d829c;font:11px monospace;pointer-events:none;text-align:right;line-height:1.7;text-shadow:0 1px 2px #000}
   #fade{position:fixed;inset:0;background:#000;z-index:20;pointer-events:none;animation:fadeout 1.6s ease forwards}
-  #panel{position:fixed;right:14px;top:12px;z-index:6;width:150px;max-height:calc(100% - 132px);overflow-y:auto;
+  #panel{position:fixed;right:14px;top:12px;z-index:6;width:150px;max-height:calc(100% - 132px);overflow:hidden;
+        display:flex;flex-direction:column;
         background:rgba(6,10,16,.64);border:1px solid rgba(120,150,190,.20);border-radius:8px;padding:9px 7px;
         backdrop-filter:blur(4px);scrollbar-width:thin}
-  #panel h4{margin:0 0 7px 7px;color:#7f96b0;font:600 10px/1 monospace;letter-spacing:1.5px;text-transform:uppercase}
+  #panel h4{margin:0 0 7px 7px;color:#7f96b0;font:600 10px/1 monospace;letter-spacing:1.5px;text-transform:uppercase;flex:0 0 auto}
+  #plist{flex:1 1 auto;min-height:0;overflow-y:auto;scrollbar-width:thin}
   .pitem{display:flex;align-items:center;gap:8px;padding:4px 7px;border-radius:5px;cursor:pointer;
         color:#a8c0d8;font:12px/1.45 'Segoe UI';transition:background .15s,color .15s;user-select:none}
   .pitem:hover{background:rgba(120,170,230,.14);color:#e2eefb}
   .pitem.on{background:rgba(120,170,230,.22);color:#fff;box-shadow:inset 0 0 0 1px rgba(140,190,240,.38)}
   .pitem .pdot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;box-shadow:0 0 6px currentColor}
+  #spdrow{flex:0 0 auto;margin:8px 7px 1px;padding-top:8px;border-top:1px solid rgba(120,150,190,.18)}
+  #spdrow .spdlbl{color:#7f96b0;font:600 10px/1 monospace;letter-spacing:1.5px;text-transform:uppercase}
+  #spdv{margin-top:5px;text-align:right;color:#a8c0d8;font:11px/1 monospace;letter-spacing:.3px}
+  #spd{-webkit-appearance:none;appearance:none;display:block;width:100%;height:14px;margin:5px 0 0;
+       background:transparent;cursor:pointer}
+  #spd:focus{outline:none}
+  #spd::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:rgba(120,150,190,.28)}
+  #spd::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:11px;height:11px;margin-top:-4px;
+       border-radius:50%;background:#a8c8e8;box-shadow:0 0 6px rgba(140,190,240,.85)}
+  #spd:hover::-webkit-slider-thumb{background:#cfe4fa}
+  #spd:focus-visible::-webkit-slider-thumb{box-shadow:0 0 0 2px rgba(140,190,240,.40),0 0 6px rgba(140,190,240,.85)}
+  #spd::-moz-range-track{height:3px;border-radius:2px;background:rgba(120,150,190,.28)}
+  #spd::-moz-range-thumb{width:11px;height:11px;border:0;border-radius:50%;background:#a8c8e8;
+       box-shadow:0 0 6px rgba(140,190,240,.85)}
   @keyframes fadeout{to{opacity:0}}
 </style>
 </head>
@@ -32,7 +48,7 @@
 <div id="title">3D 太阳系 <span>· 程序化着色 · 无贴图</span></div>
 <div id="hint">点星球或面板聚焦 · 滚轮缩放<br>拖拽旋转 · 右键平移 · Esc 回到全景</div>
 <div id="hud"></div>
-<div id="panel"><h4>天体导航</h4><div id="plist"></div></div>
+<div id="panel"><h4>天体导航</h4><div id="plist"></div><div id="spdrow"><div class="spdlbl">时间流速</div><input id="spd" type="range" min="0" max="1000" step="1" value="555" aria-label="时间流速（天/秒）"><div id="spdv">10.00 天/秒</div></div></div>
 <div id="app"></div>
 <script>/**
  * @license

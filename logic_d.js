@@ -194,8 +194,8 @@ addEventListener('keydown',function(e){
   if(kl==='r'){ clearFocus(); simDays=0; return; }
   if(kl==='o'){ showOrbits=!showOrbits; return; }
   if(kl==='l'){ showLabels=!showLabels; return; }
-  if(k==='['){ daysPerSec=Math.max(0.2,daysPerSec*0.6); return; }
-  if(k===']'){ daysPerSec=Math.min(400,daysPerSec*1.7); return; }
+  if(k==='['){ setSpeed(daysPerSec*0.6); return; }
+  if(k===']'){ setSpeed(daysPerSec*1.7); return; }
   if(k>='1'){
     if(k<='8'){
       var idx=parseInt(k,10)-1;
@@ -203,6 +203,33 @@ addEventListener('keydown',function(e){
     }
   }
 });
+
+/* ================= 时间流速滑块 ================= */
+/* 滑块位置 p 取整数 0..1000，与流速呈对数关系（0.1..400 天/秒），
+   使低速段与高速段都能精细调节。setSpeed 是 daysPerSec 的唯一写入口：
+   键盘 [ ] 与滑块共用，UI 上不可能出现两个控件各说各话。 */
+var SPD_MIN=0.1, SPD_MAX=400, SPD_STEPS=1000;
+function pToDps(p){
+  return SPD_MIN*Math.pow(SPD_MAX/SPD_MIN,p/SPD_STEPS);
+}
+function dpsToP(dps){
+  var d=Math.min(SPD_MAX,Math.max(SPD_MIN,dps));
+  return Math.round(SPD_STEPS*Math.log(d/SPD_MIN)/Math.log(SPD_MAX/SPD_MIN));
+}
+function speedLabel(dps){ return dps.toFixed(2)+' 天/秒'; }
+var spdEl=null, spdvEl=null;
+function setSpeed(dps){
+  daysPerSec=Math.min(SPD_MAX,Math.max(SPD_MIN,dps));
+  if(spdEl){ spdEl.value=String(dpsToP(daysPerSec)); }
+  if(spdvEl){ spdvEl.textContent=speedLabel(daysPerSec); }
+}
+(function initSpeedUI(){
+  var el=$('spd'), lab=$('spdv');
+  if(!el||!lab){ return; }  /* 外壳无滑块时静默降级，键盘仍然可用 */
+  spdEl=el; spdvEl=lab;
+  el.addEventListener('input',function(){ setSpeed(pToDps(parseInt(el.value,10))); });
+  setSpeed(daysPerSec);
+})();
 
 /* ================= 主循环 ================= */
 var clock=new THREE.Clock();
@@ -352,7 +379,7 @@ function updateHUD(){
   var lines=[
     'FPS       '+fps.toFixed(0),
     '模拟时间  '+simDays.toFixed(1)+' 天（'+(simDays/365.25).toFixed(2)+' 地球年）',
-    '流速      '+daysPerSec.toFixed(2)+' 天/秒'+(paused?'  [已暂停]':''),
+    '流速      '+speedLabel(daysPerSec)+(paused?'  [已暂停]':''),
     '焦点      '+focusName,
     '天体      '+BODIES.length+' 个（8 行星 + '+(BODIES.length-8)+' 卫星）',
     '环境      '+gl2+' · three r'+ENV.three+soft

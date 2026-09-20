@@ -11,6 +11,7 @@ build/focus_*.html
 build/nofade.html
 build/webgl_probe.html
 build/geom_probe.html
+build/render_probe.html
 build/old_index.html
 test/mut_*.html
 test/live.html
